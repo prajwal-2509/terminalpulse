@@ -44,13 +44,13 @@ def send_focus(filename: str, port: int = PULSE_PORT):
         pass
 
 def run():
-    print(f"👁  TerminalPulse Windows tracker running (port {PULSE_PORT})")
+    print(f"TerminalPulse Windows tracker running (port {PULSE_PORT})")
     last = None
     while True:
         title = get_active_window_title()
         f = extract_file(title)
         if f and f != last:
-            print(f"👀 Focus: {f}")
+            print(f"Focus: {f}")
             send_focus(f)
             last = f
         time.sleep(POLL_INTERVAL)
