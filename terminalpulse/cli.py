@@ -47,7 +47,7 @@ def fix():
     context = f"Command failed: `{cmd}` (exit code {exit_code}). Active file: {active_file}."
     print(f"[cyan]Sending to TerminalMind:[/] {context}")
 
-    subprocess.run(["tmind", "ask", context])
+    subprocess.run(["tmind", "heal", cmd], cwd=error.get("cwd", "."))
 
 
 @app.command()
