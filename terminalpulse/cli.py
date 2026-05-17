@@ -43,12 +43,16 @@ def fix():
     cmd = error.get("cmd", "unknown command")
     exit_code = error.get("exit_code", 1)
     active_file = focus.get("path", "unknown file") if focus else "unknown file"
+    stderr = error.get("stderr_tail", None)
 
-    context = f"Command failed: `{cmd}` (exit code {exit_code}). Active file: {active_file}."
-    print(f"[cyan]Sending to TerminalMind:[/] {context}")
-
-    subprocess.run(["tmind", "heal", cmd], cwd=error.get("cwd", "."))
-
+    if stderr:
+        context = f"Command: `{cmd}` failed with exit code {exit_code}.\nActive file: {active_file}.\nError output:\n{stderr.replace('|', chr(10))}"
+        print(f"[cyan]Sending to TerminalMind with full error context[/]")
+        subprocess.run(["tmind", "ask", context])
+    else:
+        context = f"Command failed: `{cmd}` (exit code {exit_code}). Active file: {active_file}."
+        print(f"[cyan]Sending to TerminalMind:[/] {context}")
+        subprocess.run(["tmind", "heal", cmd], cwd=error.get("cwd", "."))
 
 @app.command()
 def init():
