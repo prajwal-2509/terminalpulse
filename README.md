@@ -247,7 +247,7 @@ Contributions, issues, and feature requests are welcome!
 
 ## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+MIT © 2026 Prajwal Hulle — See **[LICENSE](https://github.com/prajwal-2509/terminalpulse/blob/main/LICENSE)** for full details.
 
 ---
 
