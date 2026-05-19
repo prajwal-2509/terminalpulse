@@ -205,7 +205,21 @@ Prints Windows PowerShell setup instructions for VS Code focus tracking.
 ```bash
 pulse init-windows
 ```
+### `pulse history`
 
+Shows a timeline of your last 30 minutes of coding activity.
+
+```bash
+pulse history
+```
+
+### `pulse mcp`
+
+Starts the MCP server so Claude Desktop and Cursor can read your pulse state directly.
+
+```bash
+pulse mcp
+```
 ---
 
 ## 🧪 Test Results
@@ -221,6 +235,46 @@ All tests run against real broken Python files using `pulse fix`:
 
 **Time from error to AI fix:** ~1 second (vs ~30 seconds copy-pasting manually)
 
+---
+
+## 🆕 What's New in v0.2.0
+
+- **Git context** — branch, last commit, and changed files sent with every `pulse fix`
+- **Multi-language detection** — Python, JavaScript, TypeScript, React, Rust, Go, Java
+- **Project type detection** — automatically detects React, Next.js, Node, Python, Rust projects
+- **`pulse history`** — timeline of last 30 minutes of coding activity
+- **MCP server** — Claude Desktop and Cursor can now subscribe to your pulse state
+
+---
+
+## 🔌 MCP Integration (Claude Desktop / Cursor)
+
+Start the MCP server:
+
+```bash
+pulse mcp
+```
+
+Add this to your Claude Desktop `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "terminalpulse": {
+      "command": "pulse",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+Claude will now have access to these tools:
+| Tool | What it returns |
+|---|---|
+| `get_pulse_state` | Full current coding context |
+| `get_hottest_error` | Most recent error with full stderr |
+| `get_active_context` | Active file, language, git branch |
+| `get_history` | Last 30 minutes timeline |
 ---
 
 ## 📋 Requirements
