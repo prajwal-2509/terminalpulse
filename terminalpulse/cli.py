@@ -68,6 +68,34 @@ def fix():
     if stderr:
         context_parts.append(f"Error output:\n{stderr.replace('|', chr(10))}")
 
+    # read active file contents
+    if active_file and Path(active_file).exists():
+        try:
+            file_contents = Path(active_file).read_text()
+            # limit to 200 lines to avoid token overflow
+            lines = file_contents.split("\n")[:200]
+            context_parts.append(
+                f"Contents of {active_file}:\n" + "\n".join(lines)
+            )
+        except Exception:
+            pass
+    # also read file from cwd if different
+    elif error.get("cwd"):
+        cwd = Path(error.get("cwd"))
+        cmd_parts = cmd.split()
+        for part in cmd_parts:
+            candidate = cwd / part
+            if candidate.exists() and candidate.suffix in {
+                ".py", ".js", ".ts", ".tsx", ".jsx", ".rs", ".go"
+            }:
+                try:
+                    lines = candidate.read_text().split("\n")[:200]
+                    context_parts.append(
+                        f"Contents of {part}:\n" + "\n".join(lines)
+                    )
+                except Exception:
+                    pass
+
     context = "\n".join(context_parts)
 
     print(f"[cyan]Project:[/] {project_type} ({active_language})")
@@ -75,11 +103,8 @@ def fix():
     print(f"[cyan]Error:[/] {cmd}")
     print(f"[cyan]Sending full context to TerminalMind...[/]")
 
-    if stderr:
-        subprocess.run(["tmind", "ask", context])
-    else:
-        subprocess.run(["tmind", "heal", cmd], cwd=error.get("cwd", "."))
-
+    full_context = "Do not use any tools. Answer only from this context:\n\n" + context
+    subprocess.run(["tmind", "ask", full_context])
 
 @app.command()
 def history():
