@@ -2,31 +2,74 @@
 
 > **Short-term memory for AI agents. Captures your coding context in real time — silently.**
 
-TerminalPulse runs in the background and watches your terminal, editor, and filesystem. When something goes wrong, type `pulse fix` — no copy-pasting, no explaining. It already knows what happened.
+TerminalPulse runs in the background and watches your terminal, editor, and filesystem. When something goes wrong, type `pulse fix` — no copy-pasting, no explaining. **It already knows what happened.**
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue?style=flat-square&logo=python)
 ![PyPI](https://img.shields.io/pypi/v/terminalpulse?style=flat-square&logo=pypi)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 ![Platform](https://img.shields.io/badge/Platform-WSL%20%7C%20Linux-orange?style=flat-square)
+![Downloads](https://img.shields.io/pypi/dm/terminalpulse?style=flat-square)
 
 ---
 
 ## 📋 Table of Contents
 
-- [Architecture](#-architecture)
+- [The Problem](#-the-problem)
+- [The Solution](#-the-solution)
+- [How It Works](#-how-it-works)
 - [Installation](#-installation)
-- [Setup](#-setup)
-- [Usage & Commands](#-usage--commands)
+- [Setup](#-setup-one-time)
+- [Commands](#-commands)
+- [MCP Integration](#-mcp-integration)
 - [Test Results](#-test-results)
+- [Language Support](#-language-support)
+- [API Key Setup](#-api-key-setup-all-platforms)
+- [Security & Privacy](#-security--privacy)
 - [Requirements](#-requirements)
 - [Contributing](#-contributing)
 - [License](#-license)
 
 ---
 
-## 🏗️ Architecture
+## 🔥 The Problem
 
-TerminalPulse runs three silent streams feeding a time-decaying knowledge graph:
+Every AI tool today requires you to:
+
+1. Notice the error
+2. Copy the traceback
+3. Switch to AI chat
+4. Paste and explain context
+5. Wait for answer
+6. Switch back to terminal
+
+**That's 30 seconds of friction, every single time.**
+
+---
+
+## ✅ The Solution
+
+```bash
+# Something breaks
+python3 app.py
+# KeyError: 'user_id'
+
+# One command — no copy-pasting
+pulse fix
+
+# TerminalMind already knows:
+# → what command failed
+# → the full error output
+# → which file you were editing
+# → your git branch
+# → the actual file contents
+# → precise fix in seconds
+```
+
+---
+
+## 🏗️ How It Works
+
+Three silent streams feed a time-decaying knowledge graph:
 
 | Stream | Source | What It Captures |
 |---|---|---|
@@ -34,20 +77,21 @@ TerminalPulse runs three silent streams feeding a time-decaying knowledge graph:
 | **Activity** | Filesystem watchdog (WSL) | Which files were just saved |
 | **Distress** | Bash hook (WSL) | Which terminal commands just failed |
 
-The graph applies **temporal decay** to every event — older events fade automatically so the AI always gets current context, not noise from this morning:
+Every event gets a **heat score** that decays over time:
 
 ```
-W(n) = e^( -λ × (t_now - t_event) )
+heat = e^(-λ × seconds_since_event) × severity
 ```
+
+Older events fade automatically — the AI always gets current context, not noise from this morning.
 
 ### Data Flow
 
 ```
-VS Code (Windows) → HTTP:7077 → pulsed daemon → ~/.devpulse_state.json
-Terminal errors   → Unix socket → pulsed daemon → ~/.devpulse_state.json
-File saves        → watchdog   → pulsed daemon → ~/.devpulse_state.json
-                                      ↓
-                          pulse fix → TerminalMind → Auto-fix
+VS Code (Windows) → HTTP:7077  ─┐
+Terminal errors   → Unix socket ─┼→ pulsed daemon → ~/.devpulse_state.json
+File saves        → watchdog   ─┘                         ↓
+                                              pulse fix → TerminalMind → Auto-fix
 ```
 
 ### Technology Stack
@@ -78,19 +122,20 @@ tmind auth
 
 ---
 
-## ⚙️ Setup
+## ⚙️ Setup (One Time)
 
-### Step 1 — Inject the shell hook (one time only)
+### Step 1 — Inject the shell hook
 
 ```bash
 pulse init
 source ~/.bashrc
 ```
 
-### Step 2 — Start the daemon
+### Step 2 — Start watching your project
 
 ```bash
-pulse start --watch /path/to/your/project
+cd your-project
+pulse watch
 ```
 
 ### Step 3 — Windows focus tracking (optional)
@@ -98,10 +143,10 @@ pulse start --watch /path/to/your/project
 For VS Code file detection, open **Windows PowerShell** and run:
 
 ```powershell
-python path\to\terminalpulse\windows_tracker.py
+python \\wsl.localhost\Ubuntu-22.04\home\username\terminalpulse\terminalpulse\windows_tracker.py
 ```
 
-Or run the following for exact setup instructions:
+Or get exact instructions with:
 
 ```bash
 pulse init-windows
@@ -109,38 +154,48 @@ pulse init-windows
 
 ---
 
-## 🛠️ Usage & Commands
+## 🛠️ Commands
+
+| Command | What It Does |
+|---|---|
+| `pulse watch` | Auto-detect project type and start daemon |
+| `pulse start --watch .` | Start daemon manually |
+| `pulse fix` | Send hottest error + full context to AI |
+| `pulse state` | Show current context as JSON |
+| `pulse history` | Show 30-minute activity timeline |
+| `pulse init` | Inject shell hook into `.bashrc` |
+| `pulse init-windows` | Windows setup instructions |
+| `pulse mcp` | Start MCP server for Claude Desktop / Cursor |
+| `pulse_run <cmd>` | Run command with full stderr capture |
 
 ---
 
-### `pulse init`
-
-Auto-injects the shell hook into `~/.bashrc`. Run once after install.
+### `pulse fix` — the star of the show
 
 ```bash
-pulse init
-source ~/.bashrc
+pulse fix
 ```
 
-**What it does:** Hooks into your shell so every failed command is silently captured by the daemon.
+No input needed. It already knows what broke, which file is open, and what you were running. Sends the full context snapshot to TerminalMind and returns a precise, targeted fix.
 
 ---
 
-### `pulse start`
+### `pulse_run` — for large projects
 
-Starts the background daemon that watches your project directory.
+Use this prefix for large build commands to capture full stderr:
 
 ```bash
-pulse start --watch .
-```
+pulse_run npm run build
+pulse_run ./gradlew build
+pulse_run pytest
 
-**What it does:** Launches the async daemon, begins watching for file saves, focus changes, and terminal errors.
+# Then fix whatever broke:
+pulse fix
+```
 
 ---
 
-### `pulse state`
-
-Prints the current hottest coding context as JSON — ranked by recency and decay weight.
+### `pulse state` — see what the AI sees
 
 ```bash
 pulse state
@@ -156,7 +211,7 @@ Example output:
       "type": "command_failed",
       "cmd": "python3 app.py",
       "exit_code": 1,
-      "stderr_tail": "ZeroDivisionError: division by zero"
+      "stderr_tail": "KeyError: 'user_id'"
     },
     {
       "heat": 0.3,
@@ -169,85 +224,9 @@ Example output:
 
 ---
 
-### `pulse fix`
+## 🔌 MCP Integration
 
-Reads the hottest error and active file, then sends full context to TerminalMind for an auto-fix.
-
-```bash
-pulse fix
-```
-
-**What it does:** No input needed. It already knows what broke, which file is open, and what you were running.
-
----
-
-### `pulse_run` — for large projects
-
-Use this prefix for large build commands to capture full stderr output:
-
-```bash
-pulse_run npm run build
-pulse_run ./gradlew build
-pulse_run pytest
-
-# Then fix whatever broke:
-pulse fix
-```
-
-**What it does:** Wraps your command and pipes the full stderr into the daemon — useful when build output is too large for the standard shell hook.
-
----
-
-### `pulse init-windows`
-
-Prints Windows PowerShell setup instructions for VS Code focus tracking.
-
-```bash
-pulse init-windows
-```
-### `pulse history`
-
-Shows a timeline of your last 30 minutes of coding activity.
-
-```bash
-pulse history
-```
-
-### `pulse mcp`
-
-Starts the MCP server so Claude Desktop and Cursor can read your pulse state directly.
-
-```bash
-pulse mcp
-```
----
-
-## 🧪 Test Results
-
-All tests run against real broken Python files using `pulse fix`:
-
-| # | Error Type | Captured | Fixed | Verified |
-|---|---|---|---|---|
-| 1 | `ZeroDivisionError` | ✅ | ✅ | ✅ |
-| 2 | `SyntaxError` | ✅ | ✅ | ✅ |
-| 3 | `ModuleNotFoundError` | ✅ | ✅ (install suggestion) | ✅ |
-| 4 | Large project stderr | ✅ via `pulse_run` | ✅ | ✅ |
-
-**Time from error to AI fix:** ~1 second (vs ~30 seconds copy-pasting manually)
-
----
-
-## 🆕 What's New in v0.2.0
-
-- **Git context** — branch, last commit, and changed files sent with every `pulse fix`
-- **Multi-language detection** — Python, JavaScript, TypeScript, React, Rust, Go, Java
-- **Project type detection** — automatically detects React, Next.js, Node, Python, Rust projects
-- **`pulse history`** — timeline of last 30 minutes of coding activity
-- **MCP server** — Claude Desktop and Cursor can now subscribe to your pulse state
-
----
-
-## 🔌 MCP Integration (Claude Desktop / Cursor)
+Connect **Claude Desktop** or **Cursor** directly to your pulse state.
 
 Start the MCP server:
 
@@ -255,7 +234,7 @@ Start the MCP server:
 pulse mcp
 ```
 
-Add this to your Claude Desktop `claude_desktop_config.json`:
+Add to your `claude_desktop_config.json`:
 
 ```json
 {
@@ -268,22 +247,75 @@ Add this to your Claude Desktop `claude_desktop_config.json`:
 }
 ```
 
-Claude will now have access to these tools:
-| Tool | What it returns |
+Available MCP tools:
+
+| Tool | Returns |
 |---|---|
 | `get_pulse_state` | Full current coding context |
 | `get_hottest_error` | Most recent error with full stderr |
 | `get_active_context` | Active file, language, git branch |
-| `get_history` | Last 30 minutes timeline |
+| `get_history` | Last 30 minutes activity timeline |
+
+---
+
+## 🧪 Test Results
+
+All tests run against real broken files using `pulse fix`:
+
+| # | Error Type | Captured | Fixed | Verified |
+|---|---|---|---|---|
+| 1 | `ZeroDivisionError` | ✅ | ✅ | ✅ |
+| 2 | `SyntaxError` | ✅ | ✅ | ✅ |
+| 3 | `ModuleNotFoundError` | ✅ | ✅ | ✅ |
+| 4 | `KeyError` | ✅ | ✅ | ✅ |
+| 5 | Large project stderr | ✅ via `pulse_run` | ✅ | ✅ |
+
+**Time from error to AI fix: ~1 second** (vs ~30 seconds copy-pasting manually)
+
+---
+
+## 🌍 Language Support
+
+| Language | Detection | Error Capture | Fix |
+|---|---|---|---|
+| Python | ✅ | ✅ | ✅ |
+| JavaScript | ✅ | ✅ | ✅ |
+| TypeScript | ✅ | ✅ | ✅ |
+| React / Next.js | ✅ | ✅ | ✅ |
+| Rust | ✅ | ✅ | ✅ |
+| Go | ✅ | ✅ | ✅ |
+| Java | ✅ | ✅ | ✅ |
+
+---
+
+## 🔑 API Key Setup (All Platforms)
+
+| Platform | Method | Command |
+|---|---|---|
+| **Any** | Run once | `tmind auth` |
+| **Linux/Mac** | Environment variable | `export GROQ_API_KEY="your_key"` |
+| **Windows** | PowerShell | `$env:GROQ_API_KEY="your_key"` |
+| **Permanent** | Add to shell config | `echo 'export GROQ_API_KEY="key"' >> ~/.bashrc` |
+
+---
+
+## 🛡️ Security & Privacy
+
+TerminalPulse is designed with a **local-first** philosophy:
+
+- **Local State:** Your context graph (`~/.devpulse_state.json`) lives entirely on your machine — nothing is streamed to a cloud service.
+- **Targeted Context:** Only the specific error and active file are sent to the AI, never your full codebase.
+- **Secure Key Storage:** API keys are stored in your OS Keyring (Windows/Mac) or a protected local file (Linux/WSL), never in plain `.env` files.
+
 ---
 
 ## 📋 Requirements
 
 - Python 3.10+
-- WSL Ubuntu (Linux daemon)
-- `netcat` (`nc`) — usually pre-installed on Ubuntu
+- WSL Ubuntu
+- `netcat` (`nc`) — pre-installed on Ubuntu
 - `terminalmind` — required for `pulse fix`
-- Windows 11 with VS Code — for focus tracking (optional)
+- Windows 11 + VS Code — for focus tracking (optional)
 
 ---
 
@@ -305,4 +337,10 @@ MIT © 2026 Prajwal Hulle — See **[LICENSE](https://github.com/prajwal-2509/te
 
 ---
 
-<p align="center">Built with ❤️ for developers who are tired of copy-pasting errors into AI.</p>
+<p align="center">
+  Built for developers who are tired of copy-pasting errors into AI.
+  <br/><br/>
+  <a href="https://pypi.org/project/terminalpulse">PyPI</a> •
+  <a href="https://github.com/prajwal-2509/terminalpulse">GitHub</a> •
+  <a href="https://github.com/prajwal-2509/terminalpulse/issues">Issues</a>
+</p>
