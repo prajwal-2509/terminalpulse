@@ -1,7 +1,24 @@
 [project]
 name = "terminalpulse"
-version = "0.2.0"
+version = "0.3.0"
+description = "Short-term memory for AI agents — captures your coding context in real time"
+readme = "README.md"
 requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Prajwal", email = "prajwalhulle25@gmail.com" }]
+keywords = ["ai", "developer-tools", "context", "terminal", "llm", "mcp", "debugging"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Topic :: Software Development :: Debuggers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Intended Audience :: Developers",
+    "Environment :: Console",
+]
 dependencies = [
     "typer>=0.12",
     "rich>=13.7",
@@ -9,6 +26,11 @@ dependencies = [
     "networkx>=3.2",
     "pydantic>=2.6",
 ]
+
+[project.urls]
+Homepage = "https://github.com/prajwal-2509/terminalpulse"
+Repository = "https://github.com/prajwal-2509/terminalpulse"
+Issues = "https://github.com/prajwal-2509/terminalpulse/issues"
 
 [project.scripts]
 pulse = "terminalpulse.cli:app"
