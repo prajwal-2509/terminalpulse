@@ -213,5 +213,38 @@ def mcp():
     print("[cyan]Add this to your Claude Desktop config to connect[/]")
     asyncio.run(mcp_server.main())
 
+@app.command()
+def watch():
+    """Auto-detect project type and start watching intelligently."""
+    cwd = Path.cwd()
+    
+    # detect project type
+    if (cwd / "package.json").exists():
+        pkg = json.loads((cwd / "package.json").read_text())
+        deps = {**pkg.get("dependencies", {}), **pkg.get("devDependencies", {})}
+        if "react" in deps and "typescript" in deps:
+            project = "React + TypeScript"
+        elif "next" in deps:
+            project = "Next.js"
+        elif "react" in deps:
+            project = "React"
+        else:
+            project = "Node.js"
+    elif (cwd / "pyproject.toml").exists() or (cwd / "requirements.txt").exists():
+        project = "Python"
+    elif (cwd / "Cargo.toml").exists():
+        project = "Rust"
+    elif (cwd / "go.mod").exists():
+        project = "Go"
+    else:
+        project = "Unknown"
+
+    print(f"[green]Project detected:[/] {project}")
+    print(f"[cyan]Watching:[/] {cwd}")
+    print(f"[yellow]Ignoring:[/] node_modules, .git, __pycache__, dist, build, .venv")
+    print(f"[cyan]Starting daemon...[/]")
+
+    asyncio.run(_daemon.main(str(cwd)))
+
 if __name__ == "__main__":
     app()

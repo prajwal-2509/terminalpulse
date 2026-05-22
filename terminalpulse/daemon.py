@@ -7,8 +7,25 @@ from .events import Event, EventType
 from .graph import PulseGraph
 
 SOCK_PATH = Path.home() / ".terminalpulse.sock"
-WATCH_EXTS = {".py", ".js", ".ts", ".tsx", ".rs", ".go", ".md", ".toml", ".json"}
+WATCH_EXTS = {".py", ".js", ".ts", ".tsx", ".jsx", ".rs", ".go", ".md", ".toml", ".json", ".java", ".cpp", ".c", ".rb", ".php", ".css", ".html", ".vue", ".svelte"}
 
+IGNORE_DIRS = {"node_modules", ".git", "__pycache__", "dist", "build", ".venv", "venv", ".next", "target", ".gradle", "vendor"}
+
+
+class FsHandler(FileSystemEventHandler):
+    def __init__(self, queue: asyncio.Queue, loop: asyncio.AbstractEventLoop):
+        self.queue = queue
+        self.loop = loop
+
+    def on_modified(self, event):
+        if event.is_directory: return
+        p = Path(event.src_path)
+        # ignore files inside ignored directories
+        if any(part in IGNORE_DIRS for part in p.parts):
+            return
+        if p.suffix not in WATCH_EXTS: return
+        ev = Event(type=EventType.FILE_SAVED, path=str(p), cwd=os.getcwd())
+        self.loop.call_soon_threadsafe(self.queue.put_nowait, ev)
 
 class FsHandler(FileSystemEventHandler):
     def __init__(self, queue: asyncio.Queue, loop: asyncio.AbstractEventLoop):
