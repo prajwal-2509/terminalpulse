@@ -246,5 +246,90 @@ def watch():
 
     asyncio.run(_daemon.main(str(cwd)))
 
+@app.command()
+def insights():
+    """Detect patterns in your coding session and surface actionable insights."""
+    if not STATE_FILE.exists():
+        print("[yellow]No state yet. Is the daemon running?[/]")
+        raise typer.Exit(1)
+
+    s = json.loads(STATE_FILE.read_text())
+    history = s.get("history", [])
+    git = s.get("git", {})
+    project_type = s.get("project_type", "unknown")
+
+    if len(history) < 3:
+        print("[yellow]Not enough history yet. Keep coding for a few minutes.[/]")
+        raise typer.Exit(0)
+
+    # count errors per file
+    error_files: dict = {}
+    error_commands: dict = {}
+    file_time: dict = {}
+    total_errors = 0
+    total_saves = 0
+
+    for ev in history:
+        t = ev["type"]
+        detail = ev.get("detail", "") or ""
+
+        if t == "command_failed":
+            total_errors += 1
+            error_commands[detail] = error_commands.get(detail, 0) + 1
+
+        if t == "file_saved":
+            total_saves += 1
+            fname = Path(detail).name if detail else "unknown"
+            file_time[fname] = file_time.get(fname, 0) + 1
+
+        if t == "focus_changed":
+            fname = Path(detail).name if detail else "unknown"
+            error_files[fname] = error_files.get(fname, 0)
+
+    # find most edited file
+    most_edited = max(file_time, key=file_time.get) if file_time else None
+    most_errored_cmd = max(error_commands, key=error_commands.get) if error_commands else None
+
+    console.print("\n[bold cyan]⚡ TerminalPulse Insights[/bold cyan]")
+    console.print(f"[dim]Project: {project_type} | Branch: {git.get('branch', 'unknown')}[/dim]\n")
+
+    # session summary
+    console.print(f"[white]Session activity:[/white]")
+    console.print(f"  • {total_saves} file saves recorded")
+    console.print(f"  • {total_errors} errors detected")
+    console.print(f"  • {len(history)} total events\n")
+
+    # pattern 1 — most edited file
+    if most_edited:
+        console.print(f"[yellow]Most active file:[/yellow] {most_edited} ({file_time[most_edited]} saves)")
+
+    # pattern 2 — recurring error
+    if most_errored_cmd and error_commands[most_errored_cmd] > 1:
+        count = error_commands[most_errored_cmd]
+        console.print(f"[red]Recurring failure:[/red] `{most_errored_cmd}` failed {count} times")
+        console.print(f"  [dim]→ Suggestion: run `pulse fix` to investigate root cause[/dim]")
+
+    # pattern 3 — error rate
+    if total_saves > 0:
+        error_rate = round((total_errors / total_saves) * 100)
+        if error_rate > 50:
+            console.print(f"[red]High error rate:[/red] {error_rate}% of saves followed by errors")
+            console.print(f"  [dim]→ Consider running tests more frequently[/dim]")
+        elif error_rate > 20:
+            console.print(f"[yellow]Moderate error rate:[/yellow] {error_rate}%")
+        else:
+            console.print(f"[green]Low error rate:[/green] {error_rate}% — clean session")
+
+    # pattern 4 — git changed files vs errors
+    changed = git.get("changed_files", "") or ""
+    if changed and most_errored_cmd:
+        changed_list = changed.split("\n")
+        console.print(f"\n[white]Changed files this session:[/white]")
+        for f in changed_list[:5]:
+            if f:
+                console.print(f"  • {f}")
+
+    console.print("")
+
 if __name__ == "__main__":
     app()
