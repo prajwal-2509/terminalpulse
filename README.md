@@ -396,15 +396,14 @@ pulse mcp        # start MCP server
 
 | Without TerminalPulse | With TerminalPulse |
 |---|---|
-| Error appears | Error appears |
-| You read the traceback | Auto-suggest appears |
-| You copy the error | You type `pulse fix` |
-| You switch to AI chat | AI already has full context |
-| You explain your project | Fix appears in seconds |
-| You explain your git branch | |
-| You paste file contents | |
-| You wait for answer | |
-| ⏱️ **~2 minutes** | ⚡ **~5 seconds** |
+| Copy error manually | ✅ Auto-captured |
+| Switch to AI chat | ✅ Already connected |
+| Explain your project | ✅ Auto-detected |
+| Explain git branch | ✅ Auto-detected |
+| Paste file contents | ✅ Auto-read |
+| Wait for response | ✅ Instant |
+| Apply fix manually | ✅ One keypress |
+| **~2 minutes** | **~5 seconds** |
 
 ---
 
