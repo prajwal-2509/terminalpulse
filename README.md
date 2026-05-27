@@ -24,6 +24,7 @@ TerminalPulse runs in the background and watches your terminal, editor, and file
 - [pulse context — Works With Any AI](#-pulse-context--works-with-any-ai)
 - [pulse report — Daily Summary](#-pulse-report--daily-summary)
 - [pulse insights — Pattern Detection](#-pulse-insights--pattern-detection)
+- [Real World Usage](#-real-world-usage)
 - [MCP Integration](#-mcp-integration)
 - [Test Results](#-test-results)
 - [Language Support](#-language-support)
@@ -344,6 +345,66 @@ Example output:
   ]
 }
 ```
+
+---
+
+## 🧑‍💻 Real World Usage
+
+### Scenario: Building a Repo Intelligence Tool
+
+You're developing a Python tool that analyzes public GitHub repos. Here's how TerminalPulse fits into your workflow:
+
+**Install once:**
+```bash
+pip install terminalpulse terminalmind
+tmind auth
+pulse install-deps
+pulse init
+source ~/.bashrc
+```
+
+**Every coding session:**
+```bash
+cd your-project
+pulse watch
+```
+
+**When you hit an error:**
+```bash
+# Error appears in terminal automatically:
+# ⚡ Error detected. Run 'pulse fix' to auto-fix.
+
+pulse fix        # auto-fix with TerminalMind
+# OR
+pulse context    # copy context for Claude / ChatGPT / Cursor
+```
+
+**Understand your session:**
+```bash
+pulse insights   # detect recurring patterns
+pulse report     # end of day summary
+pulse history    # 30-minute timeline
+```
+
+**Connect to Claude Desktop:**
+```bash
+pulse mcp        # start MCP server
+# add to claude_desktop_config.json and Claude knows your context
+```
+
+### The Difference
+
+| Without TerminalPulse | With TerminalPulse |
+|---|---|
+| Error appears | Error appears |
+| You read the traceback | Auto-suggest appears |
+| You copy the error | You type `pulse fix` |
+| You switch to AI chat | AI already has full context |
+| You explain your project | Fix appears in seconds |
+| You explain your git branch | |
+| You paste file contents | |
+| You wait for answer | |
+| ⏱️ **~2 minutes** | ⚡ **~5 seconds** |
 
 ---
 
