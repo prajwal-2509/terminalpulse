@@ -2,7 +2,7 @@
 
 > **Short-term memory for AI agents. Captures your coding context in real time — silently.**
 
-TerminalPulse runs in the background and watches your terminal, editor, and filesystem. When something goes wrong, type `pulse fix` — no copy-pasting, no explaining. **It already knows what happened.**
+TerminalPulse runs in the background and watches your terminal, editor, and filesystem. When something breaks, type `pulse fix` — no copy-pasting, no explaining. **It already knows what happened.**
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue?style=flat-square&logo=python)
 ![PyPI](https://img.shields.io/pypi/v/terminalpulse?style=flat-square&logo=pypi)
@@ -14,21 +14,17 @@ TerminalPulse runs in the background and watches your terminal, editor, and file
 
 ## 📋 Table of Contents
 
-- [The Problem](#-the-problem)
+- [The Problem](#-the-problem-every-developer-knows)
 - [The Solution](#-the-solution)
 - [How It Works](#-how-it-works)
 - [Installation](#-installation)
 - [Setup](#-setup-one-time)
 - [Commands](#-commands)
+- [Real World Scenarios](#-real-world-scenarios)
 - [Auto-Suggest on Error](#-auto-suggest-on-error)
-- [pulse context — Works With Any AI](#-pulse-context--works-with-any-ai)
-- [pulse report — Daily Summary](#-pulse-report--daily-summary)
-- [pulse insights — Pattern Detection](#-pulse-insights--pattern-detection)
-- [Real World Usage](#-real-world-usage)
-- [MCP Integration](#-mcp-integration)
-- [Test Results](#-test-results)
-- [Language Support](#-language-support)
-- [API Key Setup](#-api-key-setup-all-platforms)
+- [MCP Integration](#-mcp-integration-claude-desktop--cursor)
+- [Language & Project Support](#-language--project-support)
+- [The Difference](#-the-difference)
 - [Security & Privacy](#-security--privacy)
 - [Requirements](#-requirements)
 - [Contributing](#-contributing)
@@ -36,62 +32,57 @@ TerminalPulse runs in the background and watches your terminal, editor, and file
 
 ---
 
-## 🔥 The Problem
+## 🔥 The Problem Every Developer Knows
 
-```
-You hit an error.
+You're deep in a feature. Your build breaks. Now you have to:
 
-→  read the traceback
-→  copy it
-→  open AI chat
-→  paste and explain your project
-→  explain the file you were in
-→  explain your git branch
-→  wait
-→  switch back to terminal
-→  apply the fix
+1. Read the traceback
+2. Copy the error
+3. Switch to Claude / ChatGPT / Cursor
+4. Explain your project, your git branch, which file you were editing
+5. Paste the file contents
+6. Wait for the answer
+7. Switch back to terminal
+8. Apply the fix manually
 
-That's 2 minutes. Every. Single. Time.
-```
+**That's 2 minutes of context-switching friction. Every. Single. Time.**
+
+The worst part? The AI doesn't know anything about what you were doing. You have to re-explain everything from scratch.
 
 ---
 
 ## ✅ The Solution
 
 ```bash
-python3 app.py
-# KeyError: 'user_id'
+# Your Next.js build breaks at 2am
+npm run build
+# TypeError: Cannot read properties of undefined (reading 'userId')
 # ⚡ Error detected. Run 'pulse fix' to auto-fix.
 
 pulse fix
-# → knows the command that failed
-# → knows the full error output
-# → knows the file you were editing
-# → knows your git branch
-# → fix in seconds
+# TerminalMind already knows:
+# → Project: Next.js + TypeScript
+# → Branch: feature/auth
+# → Last commit: "add JWT middleware"
+# → Active file: src/middleware/auth.ts
+# → Full build error output
+# → Actual file contents
+# → Precise fix in seconds
 ```
+
+No switching tabs. No explaining. No copy-pasting.
 
 ---
 
 ## 🏗️ How It Works
 
-Three silent streams feed a **time-decaying knowledge graph**:
+Three silent streams feed a time-decaying knowledge graph:
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    TerminalPulse Daemon                  │
-│                                                         │
-│  VS Code title  ──── Focus stream   ──┐                 │
-│  File saves     ──── Activity stream ─┼──▶ heat graph   │
-│  Bash errors    ──── Distress stream ─┘    │            │
-│                                            ▼            │
-│                               ~/.devpulse_state.json    │
-└─────────────────────────────────────────────────────────┘
-                                            │
-                              pulse fix ────┘
-                                  │
-                          TerminalMind ──▶ patch
-```
+| Stream | Source | What It Captures |
+|---|---|---|
+| **Focus** | VS Code window title | Which file is active in your editor |
+| **Activity** | Filesystem watchdog | Which files were just saved |
+| **Distress** | Bash hook | Which terminal commands just failed |
 
 Every event gets a heat score that decays over time:
 
@@ -99,9 +90,18 @@ Every event gets a heat score that decays over time:
 heat = e^(-λ × seconds_since_event) × severity
 ```
 
-Stale context fades. The AI always gets what's relevant *right now*.
+Older events fade automatically. The AI always gets what's relevant **right now** — not noise from this morning's work.
 
-### Stack
+### Data Flow
+
+```
+VS Code (Windows) → HTTP:7077  ─┐
+Terminal errors   → Unix socket ─┼→ pulsed daemon → ~/.devpulse_state.json
+File saves        → watchdog   ─┘                         ↓
+                                          pulse fix → TerminalMind → Fix
+```
+
+### Technology Stack
 
 | Layer | Technology | Role |
 |---|---|---|
@@ -125,23 +125,19 @@ tmind auth
 ## ⚙️ Setup (One Time)
 
 ```bash
-# 1. Inject shell hook
+# Install system dependencies
 pulse install-deps
+
+# Inject shell hook
 pulse init
 source ~/.bashrc
 
-# 2. Start watching
+# Start watching your project
 cd your-project
 pulse watch
 ```
 
-**Optional — VS Code focus tracking on Windows:**
-
-```powershell
-python \\wsl.localhost\Ubuntu-22.04\home\username\terminalpulse\terminalpulse\windows_tracker.py
-```
-
-Or run `pulse init-windows` for exact instructions.
+That's it. TerminalPulse runs silently in the background from now on.
 
 ---
 
@@ -150,140 +146,135 @@ Or run `pulse init-windows` for exact instructions.
 | Command | What It Does |
 |---|---|
 | `pulse watch` | Auto-detect project type and start daemon |
-| `pulse start --watch .` | Start daemon manually |
-| `pulse fix` | Send hottest error + full context to AI |
-| `pulse context` | Formatted context block for any AI |
-| `pulse state` | Current context as JSON |
+| `pulse fix` | Send full context to AI — no input needed |
+| `pulse context` | Copy formatted context block for any AI |
+| `pulse insights` | Detect recurring failure patterns |
+| `pulse report` | End of day coding summary |
 | `pulse history` | 30-minute activity timeline |
-| `pulse report` | Daily summary |
-| `pulse insights` | Pattern detection |
+| `pulse state` | Show raw JSON context |
 | `pulse init` | Inject shell hook into `.bashrc` |
-| `pulse init-windows` | Windows setup instructions |
 | `pulse install-deps` | Install system dependencies |
 | `pulse mcp` | Start MCP server for Claude Desktop / Cursor |
-| `pulse_run <cmd>` | Run command with full stderr capture |
+| `pulse_run <cmd>` | Capture full stderr for large builds |
+
+---
+
+## 🧑‍💻 Real World Scenarios
+
+### Scenario 1 — Full-Stack Developer (Next.js + TypeScript)
+
+```bash
+cd ~/my-saas
+pulse watch
+# Project detected: Next.js + TypeScript
+# Watching: /home/user/my-saas
+
+# Later — build breaks
+npm run build
+# Module not found: Can't resolve '@/components/AuthGuard'
+# ⚡ Error detected. Run 'pulse fix' to auto-fix.
+
+pulse fix
+# Sends to TerminalMind:
+# → Project: Next.js + TypeScript
+# → Branch: feature/dashboard
+# → Changed files: components/AuthGuard.tsx, pages/dashboard.tsx
+# → Full webpack error
+# → File contents of dashboard.tsx
+# → Precise fix instantly
+```
+
+---
+
+### Scenario 2 — Backend Developer (Python / FastAPI)
+
+```bash
+cd ~/api-server
+pulse watch
+# Project detected: Python
+
+# Server crashes
+python3 main.py
+# sqlalchemy.exc.OperationalError: no such table: users
+# ⚡ Error detected. Run 'pulse fix' to auto-fix.
+
+pulse fix
+# AI knows you just edited models.py and ran a migration
+# Gives exact Alembic fix, not a generic answer
+```
+
+---
+
+### Scenario 3 — You Use Claude, Not TerminalMind
+
+```bash
+pulse context
+# Copies to clipboard:
+# === TerminalPulse Context ===
+# Project:      React + TypeScript
+# Branch:       fix/payment-flow
+# Active file:  src/checkout/PaymentForm.tsx
+# Last error:   npm run build (exit 1)
+# Changed files: PaymentForm.tsx, useStripe.ts
+# File contents: [actual code]
+# =============================
+
+# Paste into Claude — full context in one paste
+```
+
+---
+
+### Scenario 4 — Recurring Bug Pattern
+
+```bash
+# After hitting the same error 4 times today
+pulse insights
+
+# ⚡ TerminalPulse Insights
+# Project: Python | Branch: feature/auth
+#
+# Recurring failure: python3 server.py failed 4 times
+# → All failures occurred after editing config.py
+# → Suggestion: run pulse fix to investigate root cause
+# High error rate: 80%
+# → Consider adding input validation to config.py
+```
+
+---
+
+### Scenario 5 — End of Day Standup
+
+```bash
+pulse report
+
+# 📊 TerminalPulse Daily Report
+# Branch: feature/payment-integration
+#
+# • Files saved:      23
+# • Errors hit:        6
+# • Focus changes:    14
+#
+# Most edited file:   PaymentForm.tsx (6 saves)
+# Most common error:  npm run build (4x)
+#
+# Rough session — 6 errors. Run pulse insights for patterns.
+```
 
 ---
 
 ## ⚡ Auto-Suggest on Error
 
-Every failed command triggers:
+Every time a command fails, TerminalPulse prints:
 
 ```
 ⚡ Error detected. Run 'pulse fix' to auto-fix.
 ```
 
-No switching tabs. No searching. It's right there.
+You never have to remember to use it.
 
 ---
 
-## 📋 `pulse context` — Works With Any AI
-
-```bash
-pulse context
-```
-
-```
-=== TerminalPulse Context ===
-Project:      React + TypeScript
-Language:     typescript
-Active file:  src/middleware/auth.ts
-Git branch:   feature/auth
-Last commit:  add JWT middleware
-
-Changed files:
-  src/middleware/auth.ts
-  src/api/login.ts
-
-Last error:
-  Command:   npm run build
-  Exit code: 1
-  Output:    TypeError: Cannot read property 'userId'
-
-File contents (auth.ts):
-  [your actual code here]
-```
-
-Paste into Claude, ChatGPT, Cursor — whatever you use. Zero explaining.
-
----
-
-## 📊 `pulse report` — Daily Summary
-
-```bash
-pulse report
-```
-
-```
-📊 TerminalPulse Daily Report    Branch: feature/auth
-─────────────────────────────────────────────────────
-  Files saved      12       Most edited:   auth.ts (4x)
-  Errors hit        5       Most focused:  login.ts
-  Focus changes     8       Top error:     npm run build (3x)
-
-  Rough session — 5 errors. Run pulse insights for patterns.
-```
-
----
-
-## 🔍 `pulse insights` — Pattern Detection
-
-```bash
-pulse insights
-```
-
-```
-⚡ TerminalPulse Insights    React + TypeScript › feature/auth
-──────────────────────────────────────────────────────────────
-  12 saves  ·  5 errors  ·  20 events
-
-  Most active    auth.ts (4 saves)
-  Recurring      npm run build  failed 3×  → run pulse fix
-  Error rate     41%  → run tests more frequently
-```
-
----
-
-## 🧑‍💻 Real World Usage
-
-```bash
-# One-time install
-pip install terminalpulse terminalmind && tmind auth
-pulse install-deps && pulse init && source ~/.bashrc
-
-# Every session
-cd your-project && pulse watch
-
-# When something breaks
-pulse fix              # auto-fix via TerminalMind
-pulse context          # or paste context into any AI
-
-# End of session
-pulse insights         # patterns
-pulse report           # summary
-```
-
-### Before vs After
-
-```
-WITHOUT TerminalPulse          WITH TerminalPulse
-──────────────────────         ──────────────────
-Copy error manually            — auto-captured
-Open AI chat                   — already connected
-Explain your project           — auto-detected
-Explain git branch             — auto-detected
-Paste file contents            — auto-read
-Wait for response              — instant
-Apply fix manually             — one keypress
-
-⏱  ~2 minutes                 ⚡  ~5 seconds
-```
-
----
-
-## 🔌 MCP Integration
-
-Connect **Claude Desktop** or **Cursor** directly to your live pulse state.
+## 🔌 MCP Integration (Claude Desktop / Cursor)
 
 ```bash
 pulse mcp
@@ -302,6 +293,11 @@ Add to `claude_desktop_config.json`:
 }
 ```
 
+Claude Desktop now has live access to your coding context. Ask it:
+- *"What was I working on?"*
+- *"What errors did I hit today?"*
+- *"Which file is causing the most problems?"*
+
 Available tools:
 
 | Tool | Returns |
@@ -309,74 +305,65 @@ Available tools:
 | `get_pulse_state` | Full current coding context |
 | `get_hottest_error` | Most recent error with full stderr |
 | `get_active_context` | Active file, language, git branch |
-| `get_history` | Last 30 minutes activity timeline |
+| `get_history` | Last 30 minutes timeline |
 
 ---
 
-## 🧪 Test Results
+## 🌍 Language & Project Support
 
-| Error Type | Captured | Fixed | Time |
+| Stack | Detection | Error Capture | Fix |
 |---|---|---|---|
-| `ZeroDivisionError` | ✓ | ✓ | ~1s |
-| `SyntaxError` | ✓ | ✓ | ~1s |
-| `ModuleNotFoundError` | ✓ | ✓ | ~1s |
-| `KeyError` | ✓ | ✓ | ~1s |
-| Large stderr via `pulse_run` | ✓ | ✓ | ~1s |
-
----
-
-## 🌍 Language Support
-
-| Language | Detected | Errors Captured | Fixes Generated |
-|---|---|---|---|
-| Python | ✓ | ✓ | ✓ |
-| JavaScript | ✓ | ✓ | ✓ |
-| TypeScript | ✓ | ✓ | ✓ |
+| Python / FastAPI / Django | ✓ | ✓ | ✓ |
 | React / Next.js | ✓ | ✓ | ✓ |
+| TypeScript / Node.js | ✓ | ✓ | ✓ |
 | Rust | ✓ | ✓ | ✓ |
 | Go | ✓ | ✓ | ✓ |
-| Java | ✓ | ✓ | ✓ |
+| Java / Spring | ✓ | ✓ | ✓ |
+| Large builds (webpack, gradle, pytest) | ✓ via `pulse_run` | ✓ | ✓ |
 
 ---
 
-## 🔑 API Key Setup (All Platforms)
+## 📊 The Difference
 
-| Platform | Command |
+| Without TerminalPulse | With TerminalPulse |
 |---|---|
-| Run once (any) | `tmind auth` |
-| Linux / Mac | `export GROQ_API_KEY="your_key"` |
-| Windows PowerShell | `$env:GROQ_API_KEY="your_key"` |
-| Permanent | `echo 'export GROQ_API_KEY="key"' >> ~/.bashrc` |
+| Copy error manually | Auto-captured |
+| Switch to AI chat | Already connected |
+| Explain your project | Auto-detected |
+| Explain git branch | Auto-detected |
+| Paste file contents | Auto-read |
+| Wait for response | Instant |
+| Apply fix manually | One keypress |
+| **~2 minutes every time** | **~5 seconds** |
 
 ---
 
 ## 🛡️ Security & Privacy
 
-```
-Your code never leaves your machine.
-
-  ~/.devpulse_state.json   ← lives locally, never uploaded
-  Error context only       ← only the broken file goes to Groq
-  API keys                 ← OS Keyring or ~/.terminalmind_key
-```
+- **Local first** — your context graph lives entirely on your machine
+- **No telemetry** — nothing is sent anywhere without your command
+- **Targeted context** — only the specific error and active file go to the AI
+- **Secure keys** — API keys stored in OS keyring, never in plain files
 
 ---
 
 ## 📋 Requirements
 
 - Python 3.10+
-- WSL Ubuntu
+- WSL Ubuntu (Linux daemon)
 - `netcat` — pre-installed on Ubuntu
 - `terminalmind` — for `pulse fix`
-- Windows 11 + VS Code — focus tracking (optional)
+- Windows 11 + VS Code — for focus tracking (optional)
 
 ---
 
 ## 🤝 Contributing
 
-1. Fork → `git checkout -b feature/your-feature`
-2. Build → `git commit -m 'your feature'`
-3. Ship → `git push origin feature/your-feature` → Pull Request
+1. Fork the repository
+2. Create your branch: `git checkout -b feature/your-feature`
+3. Commit: `git commit -m 'Add your feature'`
+4. Push: `git push origin feature/your-feature`
+5. Open a Pull Request
 
 ---
 
