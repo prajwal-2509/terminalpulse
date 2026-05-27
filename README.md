@@ -20,6 +20,10 @@ TerminalPulse runs in the background and watches your terminal, editor, and file
 - [Installation](#-installation)
 - [Setup](#-setup-one-time)
 - [Commands](#-commands)
+- [Auto-Suggest on Error](#-auto-suggest-on-error)
+- [pulse context — Works With Any AI](#-pulse-context--works-with-any-ai)
+- [pulse report — Daily Summary](#-pulse-report--daily-summary)
+- [pulse insights — Pattern Detection](#-pulse-insights--pattern-detection)
 - [MCP Integration](#-mcp-integration)
 - [Test Results](#-test-results)
 - [Language Support](#-language-support)
@@ -161,12 +165,131 @@ pulse init-windows
 | `pulse watch` | Auto-detect project type and start daemon |
 | `pulse start --watch .` | Start daemon manually |
 | `pulse fix` | Send hottest error + full context to AI |
+| `pulse context` | Generate formatted context block for any AI |
 | `pulse state` | Show current context as JSON |
 | `pulse history` | Show 30-minute activity timeline |
+| `pulse report` | Daily summary of errors, saves, and focus |
+| `pulse insights` | Pattern detection across your session |
 | `pulse init` | Inject shell hook into `.bashrc` |
 | `pulse init-windows` | Windows setup instructions |
+| `pulse install-deps` | Install all system dependencies |
 | `pulse mcp` | Start MCP server for Claude Desktop / Cursor |
 | `pulse_run <cmd>` | Run command with full stderr capture |
+
+---
+
+## ⚡ Auto-Suggest on Error
+
+After every failed command, TerminalPulse automatically prints:
+
+```
+⚡ Error detected. Run 'pulse fix' to auto-fix.
+```
+
+Zero friction — you see it immediately after the error.
+
+---
+
+## 📋 `pulse context` — Works With Any AI
+
+Don't use TerminalMind? No problem. `pulse context` generates a formatted block you paste into **any AI**:
+
+```bash
+pulse context
+```
+
+Output:
+
+```
+=== TerminalPulse Context ===
+Project:      React + TypeScript
+Language:     typescript
+Active file:  src/middleware/auth.ts
+Git branch:   feature/auth
+Last commit:  add JWT middleware
+
+Changed files:
+  src/middleware/auth.ts
+  src/api/login.ts
+
+Last error:
+  Command:   npm run build
+  Exit code: 1
+  Output:    TypeError: Cannot read property 'userId'
+
+File contents (auth.ts):
+  [your actual code here]
+```
+
+Paste this into Claude, ChatGPT, Cursor, or any AI. No explaining needed.
+
+---
+
+## 📊 `pulse report` — Daily Summary
+
+```bash
+pulse report
+```
+
+Output:
+
+```
+📊 TerminalPulse Daily Report
+Branch: feature/auth
+
+• Files saved:    12
+• Errors hit:      5
+• Focus changes:   8
+
+Most edited file:  auth.ts (4 saves)
+Most focused file: login.ts
+Most common error: npm run build (3x)
+
+Rough session — 5 errors. Run pulse insights for patterns.
+```
+
+---
+
+## 🔍 `pulse insights` — Pattern Detection
+
+```bash
+pulse insights
+```
+
+Output:
+
+```
+⚡ TerminalPulse Insights
+Project: React + TypeScript | Branch: feature/auth
+
+Session activity:
+  • 12 file saves recorded
+  • 5 errors detected
+  • 20 total events
+
+Most active file:   auth.ts (4 saves)
+Recurring failure:  npm run build failed 3 times
+  → Suggestion: run pulse fix to investigate root cause
+High error rate:    41%
+  → Consider running tests more frequently
+```
+
+---
+
+## 🛠️ First Time Setup
+
+```bash
+# Install system dependencies
+pulse install-deps
+
+# Inject shell hook
+pulse init
+source ~/.bashrc
+
+# Start watching your project
+cd your-project
+pulse watch
+```
 
 ---
 
