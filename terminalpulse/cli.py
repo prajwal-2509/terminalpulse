@@ -331,5 +331,142 @@ def insights():
 
     console.print("")
 
+@app.command()
+def context():
+    """Generate a formatted context block for any AI — Claude, ChatGPT, Cursor."""
+    if not STATE_FILE.exists():
+        print("[yellow]No state yet. Is the daemon running?[/]")
+        raise typer.Exit(1)
+
+    s = json.loads(STATE_FILE.read_text())
+    hottest = s.get("hottest", [])
+    git = s.get("git", {})
+    project_type = s.get("project_type", "unknown")
+    active_file = s.get("active_file", "unknown")
+    active_language = s.get("active_language", "unknown")
+    history = s.get("history", [])
+
+    error = next((e for e in hottest if e["type"] == "command_failed"), None)
+    saves = [e for e in history if e["type"] == "file_saved"][-5:]
+
+    lines = []
+    lines.append("=== TerminalPulse Context ===")
+    lines.append(f"Project: {project_type}")
+    lines.append(f"Language: {active_language or 'not detected'}")
+    lines.append(f"Active file: {active_file or 'not detected (start Windows tracker for focus)'}")
+
+    if git.get("branch"):
+        lines.append(f"Git branch: {git['branch']}")
+    if git.get("last_commit"):
+        lines.append(f"Last commit: {git['last_commit']}")
+    if git.get("changed_files"):
+        lines.append(f"Changed files:\n{git['changed_files']}")
+
+    if saves:
+        lines.append("\nRecently saved:")
+        for e in saves:
+            lines.append(f"  - {e['detail']}")
+
+    if error:
+        lines.append(f"\nLast error:")
+        lines.append(f"  Command: {error.get('cmd')}")
+        lines.append(f"  Exit code: {error.get('exit_code')}")
+        stderr = error.get("stderr_tail")
+        if stderr:
+            lines.append(f"  Output:\n{stderr.replace('|', chr(10))}")
+
+    if active_file and active_file != "unknown" and Path(active_file).exists():
+        try:
+            code = Path(active_file).read_text().split("\n")[:100]
+            lines.append(f"\nFile contents ({active_file}):")
+            lines.append("\n".join(code))
+        except Exception:
+            pass
+
+    lines.append("=============================")
+    ctx = "\n".join(lines)
+
+    # print to terminal
+    console.print(f"\n[cyan]{ctx}[/cyan]\n")
+
+    # copy to clipboard if xclip available
+    try:
+        subprocess.run(["xclip", "-selection", "clipboard"],
+                      input=ctx.encode(), check=True)
+        print("[green]✓ Copied to clipboard — paste into any AI[/green]")
+    except Exception:
+        print("[yellow]Tip: install xclip to auto-copy: sudo apt install xclip[/yellow]")
+
+
+@app.command()
+def report():
+    """Show end of day coding summary."""
+    if not STATE_FILE.exists():
+        print("[yellow]No state yet. Is the daemon running?[/]")
+        raise typer.Exit(1)
+
+    s = json.loads(STATE_FILE.read_text())
+    history = s.get("history", [])
+    git = s.get("git", {})
+
+    if not history:
+        print("[yellow]No history yet.[/]")
+        raise typer.Exit(0)
+
+    errors = [e for e in history if e["type"] == "command_failed"]
+    saves = [e for e in history if e["type"] == "file_saved"]
+    focuses = [e for e in history if e["type"] == "focus_changed"]
+
+    # most common error
+    error_counts: dict = {}
+    for e in errors:
+        cmd = e.get("detail", "unknown")
+        error_counts[cmd] = error_counts.get(cmd, 0) + 1
+    most_common_error = max(error_counts, key=error_counts.get) if error_counts else None
+
+    # most edited file
+    file_counts: dict = {}
+    for e in saves:
+        f = Path(e.get("detail", "")).name
+        file_counts[f] = file_counts.get(f, 0) + 1
+    most_edited = max(file_counts, key=file_counts.get) if file_counts else None
+
+    # most focused file
+    focus_counts: dict = {}
+    for e in focuses:
+        f = Path(e.get("detail", "")).name
+        focus_counts[f] = focus_counts.get(f, 0) + 1
+    most_focused = max(focus_counts, key=focus_counts.get) if focus_counts else None
+
+    console.print("\n[bold cyan]📊 TerminalPulse Daily Report[/bold cyan]")
+    branch = git.get('branch') or 'not a git repo'
+    console.print(f"[dim]Branch: {branch}[/dim]\n")
+    console.print(f"  • Files saved:     [green]{len(saves)}[/green]")
+    console.print(f"  • Errors hit:      [red]{len(errors)}[/red]")
+    console.print(f"  • Focus changes:   [yellow]{len(focuses)}[/yellow]")
+
+    if most_edited:
+        console.print(f"\n[white]Most edited file:[/white] {most_edited} ({file_counts[most_edited]} saves)")
+    if most_focused:
+        console.print(f"[white]Most focused file:[/white] {most_focused}")
+    if most_common_error and error_counts[most_common_error] > 1:
+        console.print(f"[white]Most common error:[/white] `{most_common_error}` ({error_counts[most_common_error]}x)")
+
+    if len(errors) == 0:
+        console.print("\n[green]Clean session — no errors![/green]")
+    elif len(errors) <= 3:
+        console.print("\n[yellow]Good session — few errors.[/yellow]")
+    else:
+        console.print(f"\n[red]Rough session — {len(errors)} errors. Run `pulse insights` for patterns.[/red]")
+
+    console.print("")
+
+@app.command()
+def install_deps():
+    """Install required system dependencies (xclip, netcat)."""
+    print("[cyan]Installing system dependencies...[/cyan]")
+    subprocess.run(["sudo", "apt-get", "install", "-y", "xclip", "netcat-openbsd"])
+    print("[green]Done. Run 'pulse init' and 'source ~/.bashrc' to activate.[/green]")
+
 if __name__ == "__main__":
     app()

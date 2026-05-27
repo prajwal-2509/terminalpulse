@@ -100,6 +100,15 @@ async def main(watch_dir: str):
         "0.0.0.0", 7077
     )
 
+    watch_path = Path(watch_dir)
+    for marker in ["package.json", "pyproject.toml", "Cargo.toml", "go.mod", ".git"]:
+        if (watch_path / marker).exists():
+           break
+        parent = watch_path.parent
+    if (parent / marker).exists():
+        watch_dir = str(parent)
+        break
+
     print(f"🧠 pulsed listening on {SOCK_PATH}, watching {watch_dir}")
     print(f"🌐 HTTP endpoint on port 7077 for Windows bridge")
     try:
