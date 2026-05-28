@@ -1,5 +1,5 @@
 from __future__ import annotations
-import asyncio, json, os, signal
+import asyncio, json, os
 from pathlib import Path
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -8,7 +8,6 @@ from .graph import PulseGraph
 
 SOCK_PATH = Path.home() / ".terminalpulse.sock"
 WATCH_EXTS = {".py", ".js", ".ts", ".tsx", ".jsx", ".rs", ".go", ".md", ".toml", ".json", ".java", ".cpp", ".c", ".rb", ".php", ".css", ".html", ".vue", ".svelte"}
-
 IGNORE_DIRS = {"node_modules", ".git", "__pycache__", "dist", "build", ".venv", "venv", ".next", "target", ".gradle", "vendor"}
 
 
@@ -20,21 +19,7 @@ class FsHandler(FileSystemEventHandler):
     def on_modified(self, event):
         if event.is_directory: return
         p = Path(event.src_path)
-        # ignore files inside ignored directories
-        if any(part in IGNORE_DIRS for part in p.parts):
-            return
-        if p.suffix not in WATCH_EXTS: return
-        ev = Event(type=EventType.FILE_SAVED, path=str(p), cwd=os.getcwd())
-        self.loop.call_soon_threadsafe(self.queue.put_nowait, ev)
-
-class FsHandler(FileSystemEventHandler):
-    def __init__(self, queue: asyncio.Queue, loop: asyncio.AbstractEventLoop):
-        self.queue = queue
-        self.loop = loop
-
-    def on_modified(self, event):
-        if event.is_directory: return
-        p = Path(event.src_path)
+        if any(part in IGNORE_DIRS for part in p.parts): return
         if p.suffix not in WATCH_EXTS: return
         ev = Event(type=EventType.FILE_SAVED, path=str(p), cwd=os.getcwd())
         self.loop.call_soon_threadsafe(self.queue.put_nowait, ev)
@@ -80,10 +65,23 @@ async def consumer(queue: asyncio.Queue, graph: PulseGraph):
         print(f"⚡ {ev.type.value}  {ev.path or ev.cmd or ''}")
 
 
+def find_project_root(watch_dir: str) -> str:
+    watch_path = Path(watch_dir)
+    for marker in ["package.json", "pyproject.toml", "Cargo.toml", "go.mod", ".git"]:
+        if (watch_path / marker).exists():
+            return watch_dir
+        parent = watch_path.parent
+        if (parent / marker).exists():
+            return str(parent)
+    return watch_dir
+
+
 async def main(watch_dir: str):
     queue: asyncio.Queue = asyncio.Queue()
     graph = PulseGraph()
     loop = asyncio.get_running_loop()
+
+    watch_dir = find_project_root(watch_dir)
 
     obs = Observer()
     obs.schedule(FsHandler(queue, loop), watch_dir, recursive=True)
@@ -99,15 +97,6 @@ async def main(watch_dir: str):
         lambda r, w: handle_http_client(r, w, queue),
         "0.0.0.0", 7077
     )
-
-    watch_path = Path(watch_dir)
-    for marker in ["package.json", "pyproject.toml", "Cargo.toml", "go.mod", ".git"]:
-        if (watch_path / marker).exists():
-           break
-        parent = watch_path.parent
-    if (parent / marker).exists():
-        watch_dir = str(parent)
-        break
 
     print(f"🧠 pulsed listening on {SOCK_PATH}, watching {watch_dir}")
     print(f"🌐 HTTP endpoint on port 7077 for Windows bridge")
