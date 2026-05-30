@@ -485,6 +485,62 @@ def mcp():
     print("[cyan]Add this to your Claude Desktop config to connect[/]")
     asyncio.run(mcp_server.main())
 
+@app.command()
+def summary():
+    """Plain English summary of your current coding session."""
+    if not STATE_FILE.exists():
+        print("[yellow]No state yet. Is the daemon running?[/]")
+        raise typer.Exit(1)
+
+    s = json.loads(STATE_FILE.read_text())
+    history = s.get("history", [])
+    git = s.get("git", {})
+    project_type = s.get("project_type", "unknown")
+    active_file = s.get("active_file") or "unknown"
+
+    errors = [e for e in history if e["type"] == "command_failed"]
+    saves = [e for e in history if e["type"] == "file_saved"]
+    focuses = [e for e in history if e["type"] == "focus_changed"]
+
+    file_counts: dict = {}
+    for e in saves:
+        f = Path(e.get("detail", "")).name
+        file_counts[f] = file_counts.get(f, 0) + 1
+
+    error_counts: dict = {}
+    for e in errors:
+        cmd = e.get("detail", "unknown")
+        error_counts[cmd] = error_counts.get(cmd, 0) + 1
+
+    most_edited = max(file_counts, key=file_counts.get) if file_counts else None
+    most_errored = max(error_counts, key=error_counts.get) if error_counts else None
+    branch = git.get("branch") or "unknown branch"
+    last_commit = git.get("last_commit") or "no commits"
+
+    console.print("\n[bold cyan]📝 Session Summary[/bold cyan]\n")
+
+    if project_type != "unknown":
+        console.print(f"You are working on a [green]{project_type}[/green] project on branch [yellow]{branch}[/yellow].")
+    else:
+        console.print(f"You are on branch [yellow]{branch}[/yellow].")
+
+    if most_edited:
+        console.print(f"Most of your time was spent editing [white]{most_edited}[/white] ({file_counts[most_edited]} saves).")
+
+    if active_file and active_file != "unknown":
+        console.print(f"Your active file right now is [white]{active_file}[/white].")
+
+    if len(errors) == 0:
+        console.print(f"[green]No errors this session — clean run.[/green]")
+    elif most_errored and error_counts[most_errored] > 1:
+        console.print(f"You hit [red]{len(errors)} errors[/red], most from `{most_errored}` ({error_counts[most_errored]}x).")
+    else:
+        console.print(f"You hit [red]{len(errors)} error(s)[/red] this session.")
+
+    if last_commit and last_commit != "no commits":
+        console.print(f"Last commit: [dim]{last_commit.strip()}[/dim]")
+
+    console.print("")
 
 if __name__ == "__main__":
     app()

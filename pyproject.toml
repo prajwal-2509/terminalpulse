@@ -1,6 +1,6 @@
 [project]
 name = "terminalpulse"
-version = "0.3.0"
+version = "0.5.0"
 description = "Short-term memory for AI agents — captures your coding context in real time"
 readme = "README.md"
 requires-python = ">=3.10"
