@@ -1,6 +1,6 @@
 <div align="center">
 
-![TerminalPulse Banner](https://raw.githubusercontent.com/prajwal-2509/terminalpulse/main/assets/banner.svg)
+![TerminalPulse Banner](assets/banner.svg)
 
 ---
 
