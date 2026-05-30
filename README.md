@@ -1,7 +1,6 @@
 <div align="center">
 
-<!-- BANNER — replace with your actual screenshot -->
-![TerminalPulse Banner](https://raw.githubusercontent.com/prajwal-2509/terminalpulse/main/assets/banner.png)
+![TerminalPulse Banner](https://raw.githubusercontent.com/prajwal-2509/terminalpulse/main/assets/banner.svg)
 
 ---
 
