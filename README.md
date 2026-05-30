@@ -1,14 +1,34 @@
+<div align="center">
+
+<!-- BANNER — replace with your actual screenshot -->
+![TerminalPulse Banner](https://raw.githubusercontent.com/prajwal-2509/terminalpulse/main/assets/banner.png)
+
+---
+
 # ⚡ TerminalPulse
 
-> **Short-term memory for AI agents. Captures your coding context in real time — silently.**
+***Short-term memory for AI agents. Captures your coding context in real time — silently.***
 
-TerminalPulse runs in the background and watches your terminal, editor, and filesystem. When something breaks, type `pulse fix` — no copy-pasting, no explaining. **It already knows what happened.**
+Detect errors, track your focus, and fix bugs instantly — no copy-pasting, no explaining, no context switching. TerminalPulse watches your terminal, editor, and filesystem. When something breaks, it already knows what happened.
 
-![Python](https://img.shields.io/badge/Python-3.10+-blue?style=flat-square&logo=python)
-![PyPI](https://img.shields.io/pypi/v/terminalpulse?style=flat-square&logo=pypi)
-![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
-![Platform](https://img.shields.io/badge/Platform-WSL%20%7C%20Linux-orange?style=flat-square)
-![Downloads](https://img.shields.io/pypi/dm/terminalpulse?style=flat-square)
+---
+
+![Python](https://img.shields.io/badge/PYTHON-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![3.10+](https://img.shields.io/badge/3.10+-blue?style=for-the-badge)
+&nbsp;
+![FastEmbed](https://img.shields.io/badge/ASYNCIO-FF6B35?style=for-the-badge&logo=python&logoColor=white)
+&nbsp;
+![NetworkX](https://img.shields.io/badge/NETWORKX-4B8BBE?style=for-the-badge&logoColor=white)
+&nbsp;
+![Typer](https://img.shields.io/badge/TYPER-009688?style=for-the-badge&logoColor=white)
+&nbsp;
+![Rich](https://img.shields.io/badge/RICH-8A2BE2?style=for-the-badge&logoColor=white)
+&nbsp;
+![PyPI](https://img.shields.io/badge/PYPI-3775A9?style=for-the-badge&logo=pypi&logoColor=white)
+&nbsp;
+![License](https://img.shields.io/badge/LICENSE-MIT-green?style=for-the-badge)
+
+</div>
 
 ---
 
@@ -148,6 +168,7 @@ That's it. TerminalPulse runs silently in the background from now on.
 | `pulse watch` | Auto-detect project type and start daemon |
 | `pulse fix` | Send full context to AI — no input needed |
 | `pulse context` | Copy formatted context block for any AI |
+| `pulse summary` | Plain English summary of your coding session |
 | `pulse insights` | Detect recurring failure patterns |
 | `pulse report` | End of day coding summary |
 | `pulse history` | 30-minute activity timeline |
@@ -258,6 +279,36 @@ pulse report
 # Most common error:  npm run build (4x)
 #
 # Rough session — 6 errors. Run pulse insights for patterns.
+```
+
+---
+
+### Scenario 6 — Quick Session Summary
+
+```bash
+pulse summary
+
+# 📝 Session Summary
+#
+# You are working on a Python project on branch feature/auth.
+# Most of your time was spent editing models.py (6 saves).
+# Your active file right now is models.py.
+# You hit 3 errors, most from python3 server.py (3x).
+# Last commit: add user authentication
+```
+
+Useful when coming back after a break — instant context of where you left off.
+
+```bash
+# Real output example:
+(terminalpulse) prajwal@Prajwal:~/terminalpulse$ pulse summary
+
+📝 Session Summary
+
+You are on branch master.
+Most of your time was spent editing cli.py (1 save).
+You hit 1 error(s) this session.
+Last commit: v0.5.0 - graceful fallback, pulse context, auto-suggest, install-deps
 ```
 
 ---
@@ -373,10 +424,16 @@ MIT © 2026 Prajwal Hulle — See **[LICENSE](https://github.com/prajwal-2509/te
 
 ---
 
-<p align="center">
-  Built for developers who are tired of copy-pasting errors into AI.
-  <br/><br/>
-  <a href="https://pypi.org/project/terminalpulse">PyPI</a> •
-  <a href="https://github.com/prajwal-2509/terminalpulse">GitHub</a> •
-  <a href="https://github.com/prajwal-2509/terminalpulse/issues">Issues</a>
-</p>
+<div align="center">
+
+Built for developers who are tired of copy-pasting errors into AI.
+
+<br/>
+
+[![PyPI](https://img.shields.io/badge/PyPI-terminalpulse-3775A9?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/terminalpulse)
+&nbsp;
+[![GitHub](https://img.shields.io/badge/GitHub-prajwal--2509-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/prajwal-2509/terminalpulse)
+&nbsp;
+[![Issues](https://img.shields.io/badge/Issues-open-FF4444?style=for-the-badge&logo=github&logoColor=white)](https://github.com/prajwal-2509/terminalpulse/issues)
+
+</div>
