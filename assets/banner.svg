@@ -1,0 +1,36 @@
+<svg viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="800" height="420" rx="14" fill="#0D1117"/>
+  <rect x="0" y="0" width="800" height="42" rx="14" fill="#161B22"/>
+  <rect x="0" y="28" width="800" height="14" fill="#161B22"/>
+  <circle cx="24" cy="21" r="6" fill="#FF5F57"/>
+  <circle cx="44" cy="21" r="6" fill="#FFBD2E"/>
+  <circle cx="64" cy="21" r="6" fill="#28C840"/>
+  <text x="400" y="26" text-anchor="middle" font-family="monospace" font-size="13" fill="#8B949E">terminalpulse — zsh</text>
+  <text x="28" y="78" font-family="monospace" font-size="13" fill="#58A6FF">~/my-saas</text>
+  <text x="118" y="78" font-family="monospace" font-size="13" fill="#3FB950"> (feature/auth)</text>
+  <text x="258" y="78" font-family="monospace" font-size="13" fill="#8B949E"> $ </text>
+  <text x="278" y="78" font-family="monospace" font-size="13" fill="#E6EDF3">npm run build</text>
+  <text x="28" y="104" font-family="monospace" font-size="12" fill="#F85149">TypeError: Cannot read properties of undefined (reading 'userId')</text>
+  <text x="28" y="122" font-family="monospace" font-size="12" fill="#6E7681">    at AuthMiddleware.verify (src/middleware/auth.ts:34:18)</text>
+  <text x="28" y="140" font-family="monospace" font-size="12" fill="#6E7681">    at Layer.handle [as handle_request] (express/lib/router/layer.js:95:5)</text>
+  <rect x="18" y="154" width="620" height="24" rx="4" fill="#1A2332"/>
+  <text x="28" y="170" font-family="monospace" font-size="12" fill="#F0A500">⚡ Error detected. Run 'pulse fix' to auto-fix.</text>
+  <text x="28" y="204" font-family="monospace" font-size="13" fill="#58A6FF">~/my-saas</text>
+  <text x="118" y="204" font-family="monospace" font-size="13" fill="#3FB950"> (feature/auth)</text>
+  <text x="258" y="204" font-family="monospace" font-size="13" fill="#8B949E"> $ </text>
+  <text x="278" y="204" font-family="monospace" font-size="13" fill="#E6EDF3">pulse fix</text>
+  <rect x="18" y="216" width="764" height="164" rx="6" fill="#0D1F12" stroke="#238636" stroke-width="1"/>
+  <text x="28" y="238" font-family="monospace" font-size="12" fill="#3FB950">⚡ TerminalMind activated</text>
+  <text x="28" y="258" font-family="monospace" font-size="12" fill="#8B949E">  Project    </text><text x="108" y="258" font-family="monospace" font-size="12" fill="#E6EDF3">Next.js + TypeScript</text>
+  <text x="28" y="275" font-family="monospace" font-size="12" fill="#8B949E">  Branch     </text><text x="108" y="275" font-family="monospace" font-size="12" fill="#58A6FF">feature/auth</text>
+  <text x="28" y="292" font-family="monospace" font-size="12" fill="#8B949E">  Active     </text><text x="108" y="292" font-family="monospace" font-size="12" fill="#E6EDF3">src/middleware/auth.ts:34</text>
+  <text x="28" y="309" font-family="monospace" font-size="12" fill="#8B949E">  Last commit </text><text x="116" y="309" font-family="monospace" font-size="12" fill="#E6EDF3">add JWT middleware</text>
+  <line x1="28" y1="320" x2="772" y2="320" stroke="#238636" stroke-width="0.5" stroke-dasharray="4,4"/>
+  <text x="28" y="338" font-family="monospace" font-size="12" fill="#3FB950">  Fix →</text>
+  <text x="76" y="338" font-family="monospace" font-size="12" fill="#E6EDF3">req.user is undefined — add null check before accessing userId</text>
+  <text x="76" y="356" font-family="monospace" font-size="12" fill="#E6EDF3">const userId = req.user?.userId ?? redirect('/login')</text>
+  <text x="28" y="374" font-family="monospace" font-size="12" fill="#8B949E">  Apply patch? </text>
+  <rect x="138" y="362" width="32" height="16" rx="3" fill="#238636"/>
+  <text x="154" y="374" font-family="monospace" font-size="11" text-anchor="middle" fill="#FFFFFF">yes</text>
+  <text x="176" y="374" font-family="monospace" font-size="12" fill="#8B949E"> / no</text>
+</svg>
