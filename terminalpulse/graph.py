@@ -97,7 +97,6 @@ class PulseGraph:
         if ev.type == EventType.FOCUS_CHANGED:
             self._focus_node = nid
 
-        # keep history for pulse history command
         self._history.append({
             "ts": ev.ts,
             "type": ev.type.value,
@@ -131,6 +130,11 @@ class PulseGraph:
             focus_event = self.g.nodes[self._focus_node]["event"]
 
         cwd = focus_event.get("cwd") if focus_event else None
+        if not cwd:
+            for n, d in self.g.nodes(data=True):
+                if d["event"].get("cwd"):
+                    cwd = d["event"]["cwd"]
+                    break
 
         state = {
             "generated_at": time.time(),
