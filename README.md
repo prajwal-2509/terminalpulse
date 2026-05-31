@@ -26,6 +26,8 @@ Detect errors, track your focus, and fix bugs instantly — no copy-pasting, no 
 ![PyPI](https://img.shields.io/badge/PYPI-3775A9?style=for-the-badge&logo=pypi&logoColor=white)
 &nbsp;
 ![License](https://img.shields.io/badge/LICENSE-MIT-green?style=for-the-badge)
+&nbsp;
+![Tests](https://img.shields.io/badge/TESTS-29%20passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)
 
 </div>
 
@@ -46,6 +48,7 @@ Detect errors, track your focus, and fix bugs instantly — no copy-pasting, no 
 - [The Difference](#-the-difference)
 - [Security & Privacy](#-security--privacy)
 - [Requirements](#-requirements)
+- [Tests](#-tests)
 - [Contributing](#-contributing)
 - [License](#-license)
 
@@ -407,13 +410,35 @@ Available tools:
 
 ---
 
+## 🧪 Tests
+
+**29 unit tests — all passing.**
+
+```bash
+.venv/bin/pytest tests/ -v
+# 29 passed in 0.83s
+```
+
+| Category | Tests | What's Verified |
+|---|---|---|
+| **Event model** | 4 | `COMMAND_FAILED`, `FILE_SAVED`, `FOCUS_CHANGED`, `COMMAND_OK` — correct fields & timestamps |
+| **Language detection** | 8 | `.py` → python, `.ts` → typescript, `.tsx` → typescript, `.js` → javascript, `.rs` → rust, `.go` → go, unknown ext, `None` input |
+| **Project type detection** | 8 | `pyproject.toml` → python, `requirements.txt` → python, `package.json` → react-typescript / nextjs / node, `Cargo.toml` → rust, `go.mod` → go, empty folder → unknown |
+| **PulseGraph** | 9 | Events added to graph, heat scores 0–1, errors linked to active file, hottest events sorted by heat, state written to disk, history recorded |
+
+---
+
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create your branch: `git checkout -b feature/your-feature`
-3. Commit: `git commit -m 'Add your feature'`
-4. Push: `git push origin feature/your-feature`
-5. Open a Pull Request
+3. Add tests for your feature — all PRs must include new tests covering new behaviour
+4. Ensure all 29 existing tests still pass: `.venv/bin/pytest tests/ -v`
+5. Commit: `git commit -m 'Add your feature'`
+6. Push: `git push origin feature/your-feature`
+7. Open a Pull Request
+
+> PRs without passing tests will not be merged.
 
 ---
 
