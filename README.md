@@ -441,7 +441,17 @@ Available tools:
 > PRs without passing tests will not be merged.
 
 ---
+## 📝 Changelog
 
+| Version | What's New |
+|---|---|
+| `v0.5.0` | `pulse summary`, graceful fallback, `pulse context`, auto-suggest on every error, `pulse install-deps`, 29 unit tests, demo screenshots |
+| `v0.4.0` | MCP integration for Claude Desktop / Cursor |
+| `v0.3.0` | `pulse insights`, `pulse report`, pattern detection |
+| `v0.2.0` | `pulse fix`, TerminalMind bridge, Unix socket daemon |
+| `v0.1.0` | Initial release — shell hook, file watcher, heat graph |
+
+---
 ## 📄 License
 
 MIT © 2026 Prajwal Hulle — See **[LICENSE](https://github.com/prajwal-2509/terminalpulse/blob/main/LICENSE)** for full details.
